@@ -22,6 +22,10 @@ import com.example.fyers.repository.FyersDetailsRepository;
 import com.example.fyers.repository.FyersTokenRepository;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.HashingAlgorithm;
+import dev.samstevens.totp.exceptions.CodeGenerationException;
+import dev.samstevens.totp.time.SystemTimeProvider;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -88,6 +92,8 @@ public class FyersAuthService {
 	        tokenEntity.setExpiresIn(expiresIn);
 	        tokenEntity.setCreatedAt(LocalDateTime.now());
 	        tokenEntity.setUpdatedAt(LocalDateTime.now());
+	        
+	     	tokenEntity.setFyersDetails(details);
 	        FyersToken savedToken = tokenRepo.save(tokenEntity);
 	        
 	        // Convert to DTO
@@ -221,8 +227,21 @@ public class FyersAuthService {
 	}
 
 	private Map<String, Object> verifyOtp(String requestKey, String totpKey) {
-		GoogleAuthenticator gAuth = new GoogleAuthenticator();
-		int otp = gAuth.getTotpPassword(totpKey);
+        // Generate TOTP (6 digits, 30 sec interval, SHA1)
+        DefaultCodeGenerator codeGenerator = new DefaultCodeGenerator(HashingAlgorithm.SHA1, 6);
+        long timeBucket = new SystemTimeProvider().getTime() / 30;
+        //String otp = codeGenerator.generate(totpKey.getBytes(), timeBucket);
+        // Pass the secret as a String, not bytes
+        String otp = null;
+		try {
+			otp = codeGenerator.generate(totpKey, timeBucket);
+		} catch (CodeGenerationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+		//GoogleAuthenticator gAuth = new GoogleAuthenticator();
+		//int otp = gAuth.getTotpPassword(totpKey);
 
 		String url = BASE_URL + "/verify_otp";
 		Map<String, Object> payload = Map.of("request_key", requestKey, "otp", otp);
