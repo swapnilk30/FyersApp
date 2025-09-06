@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.fyers.model.FyersDetails;
 import com.example.fyers.model.FyersToken;
+import com.example.fyers.service.FyersAuthService;
 import com.example.fyers.service.FyersService;
 
 @RestController
@@ -19,9 +20,11 @@ import com.example.fyers.service.FyersService;
 public class FyersController {
 
 	private final FyersService fyersService;
+	private final FyersAuthService fyersAuthService;
 
-	public FyersController(FyersService fyersService) {
+	public FyersController(FyersService fyersService,FyersAuthService fyersAuthService) {
 		this.fyersService = fyersService;
+		this.fyersAuthService = fyersAuthService;
 	}
 
 	// ------- CRUD for FyersDetails -------
@@ -62,5 +65,11 @@ public class FyersController {
 	public void deleteToken(@PathVariable Long tokenId) {
 		fyersService.deleteToken(tokenId);
 	}
+
+	//http://localhost:8080/api/fyers/authenticate/{username}
+    @PostMapping("/authenticate/{username}")
+    public FyersToken authenticate(@PathVariable String username){
+        return fyersAuthService.callAuthenticateApi(username);
+    }
 
 }

@@ -62,5 +62,9 @@ public class FyersService {
 	    public void deleteToken(Long tokenId) {
 	        tokenRepo.deleteById(tokenId);
 	    }
+	    
+	    public void callAuthenticateApiFyers(){
+	    	
+	    }
 
 }
