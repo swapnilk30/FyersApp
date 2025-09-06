@@ -43,7 +43,7 @@ public class FyersDetails {
 
     private String totpKey;
 
-    private int pin;
+    private String pin;
     
     // One client can have many tokens
     @OneToMany(mappedBy = "fyersDetails", cascade = CascadeType.ALL, orphanRemoval = true)

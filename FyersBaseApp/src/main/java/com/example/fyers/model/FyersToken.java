@@ -10,6 +10,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,19 +26,37 @@ import lombok.Setter;
 @NoArgsConstructor
 public class FyersToken {
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-	
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	private String clientId;
+
 	@Column(name = "access_token", columnDefinition = "TEXT")
-    private String accessToken;
+	private String accessToken;
 
-    private LocalDateTime createdAt;
+	@Column(name = "refresh_token", columnDefinition = "TEXT")
+	private String refreshToken;
 
-    private LocalDateTime updatedAt;
-    
- // Link token to details via clientId (foreign key)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fyers_details_id", nullable = false)
-    private FyersDetails fyersDetails;
+	private Long expiresIn;
+
+	private LocalDateTime createdAt;
+
+	private LocalDateTime updatedAt;
+
+	// Link token to details via clientId (foreign key)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "fyers_details_id", nullable = false)
+	private FyersDetails fyersDetails;
+	
+	@PrePersist
+    public void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
 }

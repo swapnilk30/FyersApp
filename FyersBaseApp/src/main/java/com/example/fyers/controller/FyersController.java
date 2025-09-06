@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.fyers.dto.FyersTokenDTO;
 import com.example.fyers.model.FyersDetails;
 import com.example.fyers.model.FyersToken;
 import com.example.fyers.service.FyersAuthService;
@@ -68,7 +69,7 @@ public class FyersController {
 
 	//http://localhost:8080/api/fyers/authenticate/{username}
     @PostMapping("/authenticate/{username}")
-    public FyersToken authenticate(@PathVariable String username){
+    public FyersTokenDTO authenticate(@PathVariable String username){
         return fyersAuthService.callAuthenticateApi(username);
     }
 
