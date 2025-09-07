@@ -1,7 +1,10 @@
 package com.example.fyers.controller;
 
 import java.util.List;
+import java.util.Map;
 
+import org.json.JSONObject;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -71,6 +74,28 @@ public class FyersController {
     @PostMapping("/authenticate/{username}")
     public FyersTokenDTO authenticate(@PathVariable String username){
         return fyersAuthService.callAuthenticateApi(username);
+    }
+    
+    
+    
+    @GetMapping("/profile/{username}")
+    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable String username) {
+    	
+    	JSONObject profile = fyersService.getProfile(username);
+    	
+    	Map<String, Object> profileMap = profile.toMap();// Jackson will serialize properly
+    	
+        return ResponseEntity.ok(profileMap);
+    }
+
+    @GetMapping("/stock-history/{username}")
+    public ResponseEntity<JSONObject> getStockHistory(@PathVariable String username) {
+        return ResponseEntity.ok(fyersService.getStockHistory(username));
+    }
+
+    @GetMapping("/holdings/{username}")
+    public ResponseEntity<JSONObject> getHoldings(@PathVariable String username) {
+        return ResponseEntity.ok(fyersService.getHoldings(username));
     }
 
 }
