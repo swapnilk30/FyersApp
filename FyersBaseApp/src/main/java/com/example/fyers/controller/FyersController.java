@@ -20,13 +20,13 @@ import com.example.fyers.service.FyersAuthService;
 import com.example.fyers.service.FyersService;
 
 @RestController
-@RequestMapping("/api/fyers")
+@RequestMapping("/api/v1/fyers")
 public class FyersController {
 
 	private final FyersService fyersService;
 	private final FyersAuthService fyersAuthService;
 
-	public FyersController(FyersService fyersService,FyersAuthService fyersAuthService) {
+	public FyersController(FyersService fyersService, FyersAuthService fyersAuthService) {
 		this.fyersService = fyersService;
 		this.fyersAuthService = fyersAuthService;
 	}
@@ -70,32 +70,40 @@ public class FyersController {
 		fyersService.deleteToken(tokenId);
 	}
 
-	//http://localhost:8080/api/fyers/authenticate/{username}
-    @PostMapping("/authenticate/{username}")
-    public FyersTokenDTO authenticate(@PathVariable String username){
-        return fyersAuthService.callAuthenticateApi(username);
-    }
-    
-    
-    
-    @GetMapping("/profile/{username}")
-    public ResponseEntity<Map<String, Object>> getProfile(@PathVariable String username) {
-    	
-    	JSONObject profile = fyersService.getProfile(username);
-    	
-    	Map<String, Object> profileMap = profile.toMap();// Jackson will serialize properly
-    	
-        return ResponseEntity.ok(profileMap);
-    }
+	// ---- Authentication ----
+	@PostMapping("/{username}/authenticate")
+	public FyersTokenDTO authenticate(@PathVariable String username) {
+		return fyersAuthService.callAuthenticateApi(username);
+	}
 
-    @GetMapping("/stock-history/{username}")
-    public ResponseEntity<JSONObject> getStockHistory(@PathVariable String username) {
-        return ResponseEntity.ok(fyersService.getStockHistory(username));
-    }
+	// ---- Profile ----
+	@GetMapping("/{username}/profile")
+	public ResponseEntity<Map<String, Object>> getProfile(@PathVariable String username) {
 
-    @GetMapping("/holdings/{username}")
-    public ResponseEntity<JSONObject> getHoldings(@PathVariable String username) {
-        return ResponseEntity.ok(fyersService.getHoldings(username));
-    }
+		JSONObject profile = fyersService.getProfile(username);
+
+		Map<String, Object> profileMap = profile.toMap();// Jackson will serialize properly
+
+		return ResponseEntity.ok(profileMap);
+	}
+
+	// ---- Stock Quotes ----
+	@GetMapping("/{username}/quotes")
+	public ResponseEntity<Map<String, Object>> getStockQuotes(@PathVariable String username) {
+		// fyersService.getStockQuotes(username).toMap();
+		return ResponseEntity.ok(null);
+	}
+
+	// ---- Stock History ----
+	@GetMapping("/{username}/stock-history")
+	public ResponseEntity<Map<String, Object>> getStockHistory(@PathVariable String username) {
+		return ResponseEntity.ok(fyersService.getStockHistory(username).toMap());
+	}
+
+	// ---- Holdings ----
+	@GetMapping("/{username}/holdings")
+	public ResponseEntity<Map<String, Object>> getHoldings(@PathVariable String username) {
+		return ResponseEntity.ok(fyersService.getHoldings(username).toMap());
+	}
 
 }
