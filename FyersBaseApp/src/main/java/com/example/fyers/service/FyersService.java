@@ -128,5 +128,19 @@ public class FyersService {
 			throw new RuntimeException("Error fetching profile: " + ProfileResponseTuple.Item2());
 		}
 	}
+	
+	public JSONObject GetStockQuotes(String username,String symbols) {
+		FyersClass fyersClass = initializeFyers(username);
+		
+        Tuple<JSONObject, JSONObject> stockTuple = fyersClass.GetStockQuotes(symbols);
 
+        if (stockTuple.Item2() == null) {
+            System.out.println("Stock Quotes:" + stockTuple.Item1());
+            return stockTuple.Item1();
+        } else {
+            System.out.println("Error: " + stockTuple.Item2());
+            throw new RuntimeException("Error fetching GetStockQuotes: " + stockTuple.Item2());
+        }
+        
+	}
 }
