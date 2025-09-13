@@ -1,6 +1,10 @@
 package com.example.fyers.service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +12,7 @@ import java.util.Optional;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import com.example.fyers.dto.OhlcData;
 import com.example.fyers.model.FyersDetails;
 import com.example.fyers.model.FyersToken;
 import com.example.fyers.repository.FyersDetailsRepository;
@@ -84,25 +89,110 @@ public class FyersService {
 
 	}
 
-	public JSONObject getStockHistory(String username) {
+	public List<OhlcData> getStockHistory(String username) {
+
 		FyersClass fyersClass = initializeFyers(username);
 
 		StockHistoryModel model = new StockHistoryModel();
 		model.Symbol = "NSE:SBIN-EQ";
-		model.Resolution = "30";
+		model.Resolution = "60";
 		model.DateFormat = "1";
-		model.RangeFrom = "2021-01-01";
-		model.RangeTo = "2022-02-03";
+		model.RangeFrom = "2025-09-01";
+		model.RangeTo = "2025-09-13";
 		model.ContFlag = 1;
 
 		Tuple<JSONObject, JSONObject> stockTuple = fyersClass.GetStockHistory(model);
 
+		List<OhlcData> list = new ArrayList<>();
+
 		if (stockTuple.Item2() == null) {
-			return stockTuple.Item1();
+			JSONObject result = stockTuple.Item1();
+			if (result.has("candles")) {
+				for (Object candleObj : result.getJSONArray("candles")) {
+					// JSONArray element → cast safely
+					org.json.JSONArray candle = (org.json.JSONArray) candleObj;
+
+					long epoch = candle.getLong(0);
+
+					// --- Convert Epoch -> Readable Time ---
+					String utcTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(ZoneId.of("UTC"))
+							.format(Instant.ofEpochSecond(epoch));
+
+					String istTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")
+							.withZone(ZoneId.of("Asia/Kolkata")).format(Instant.ofEpochSecond(epoch));
+
+					// --- Build OHLC Data (extended with formatted time) ---
+					OhlcData ohlc = new OhlcData(
+							epoch, candle.getDouble(1), // open
+							candle.getDouble(2), // high
+							candle.getDouble(3), // low
+							candle.getDouble(4), // close
+							candle.getLong(5), // volume
+							utcTime, istTime);
+
+					list.add(ohlc);
+				}
+			}
+			return list;
 		} else {
 			throw new RuntimeException("Stock History Error: " + stockTuple.Item2());
 		}
 	}
+	
+	public List<OhlcData> getStockHistory(String username,String symbol) {
+
+		FyersClass fyersClass = initializeFyers(username);
+		
+		String exchange = "NSE";
+		String secType = (symbol.equalsIgnoreCase("NIFTY") || symbol.equalsIgnoreCase("BANKNIFTY")) ? "INDEX" : "EQ";
+		String formatSymbol = formatSymbol(exchange, symbol, secType);
+		
+		StockHistoryModel model = new StockHistoryModel();
+		model.Symbol = formatSymbol;
+		model.Resolution = "60";
+		model.DateFormat = "1";
+		model.RangeFrom = "2025-09-01";
+		model.RangeTo = "2025-09-13";
+		model.ContFlag = 1;
+
+		Tuple<JSONObject, JSONObject> stockTuple = fyersClass.GetStockHistory(model);
+
+		List<OhlcData> list = new ArrayList<>();
+
+		if (stockTuple.Item2() == null) {
+			JSONObject result = stockTuple.Item1();
+			if (result.has("candles")) {
+				for (Object candleObj : result.getJSONArray("candles")) {
+					// JSONArray element → cast safely
+					org.json.JSONArray candle = (org.json.JSONArray) candleObj;
+
+					long epoch = candle.getLong(0);
+
+					// --- Convert Epoch -> Readable Time ---
+					String utcTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z").withZone(ZoneId.of("UTC"))
+							.format(Instant.ofEpochSecond(epoch));
+
+					String istTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")
+							.withZone(ZoneId.of("Asia/Kolkata")).format(Instant.ofEpochSecond(epoch));
+
+					// --- Build OHLC Data (extended with formatted time) ---
+					OhlcData ohlc = new OhlcData(
+							epoch, candle.getDouble(1), // open
+							candle.getDouble(2), // high
+							candle.getDouble(3), // low
+							candle.getDouble(4), // close
+							candle.getLong(5), // volume
+							utcTime, istTime);
+
+					list.add(ohlc);
+				}
+			}
+			return list;
+		} else {
+			throw new RuntimeException("Stock History Error: " + stockTuple.Item2());
+		}
+	}
+
 
 	public JSONObject getHoldings(String username) {
 		FyersClass fyersClass = initializeFyers(username);
@@ -128,19 +218,24 @@ public class FyersService {
 			throw new RuntimeException("Error fetching profile: " + ProfileResponseTuple.Item2());
 		}
 	}
-	
-	public JSONObject GetStockQuotes(String username,String symbols) {
-		FyersClass fyersClass = initializeFyers(username);
-		
-        Tuple<JSONObject, JSONObject> stockTuple = fyersClass.GetStockQuotes(symbols);
 
-        if (stockTuple.Item2() == null) {
-            System.out.println("Stock Quotes:" + stockTuple.Item1());
-            return stockTuple.Item1();
-        } else {
-            System.out.println("Error: " + stockTuple.Item2());
-            throw new RuntimeException("Error fetching GetStockQuotes: " + stockTuple.Item2());
-        }
-        
+	public JSONObject GetStockQuotes(String username, String symbols) {
+		FyersClass fyersClass = initializeFyers(username);
+
+		Tuple<JSONObject, JSONObject> stockTuple = fyersClass.GetStockQuotes(symbols);
+
+		if (stockTuple.Item2() == null) {
+			System.out.println("Stock Quotes:" + stockTuple.Item1());
+			return stockTuple.Item1();
+		} else {
+			System.out.println("Error: " + stockTuple.Item2());
+			throw new RuntimeException("Error fetching GetStockQuotes: " + stockTuple.Item2());
+		}
+
 	}
+	
+	private String formatSymbol(String exchange, String symbol, String secType) {
+	    return exchange + ":" + symbol + "-" + secType;
+	}
+
 }

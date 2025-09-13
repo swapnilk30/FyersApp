@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Stock OHLC Data</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h2 class="mb-3">Stock OHLC History</h2>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>IST Time</th>
+                <th>Open</th>
+                <th>High</th>
+                <th>Low</th>
+                <th>Close</th>
+                <th>Volume</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="ohlc : ${ohlcList}">
+                <td th:text="${ohlc.istTime}"></td>
+                <td th:text="${ohlc.open}"></td>
+                <td th:text="${ohlc.high}"></td>
+                <td th:text="${ohlc.low}"></td>
+                <td th:text="${ohlc.close}"></td>
+                <td th:text="${ohlc.volume}"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 package com.example.fyers.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.fyers.dto.OhlcData;
 import com.example.fyers.service.FyersService;
 
 @Controller
@@ -38,6 +40,14 @@ public class FyersViewController {
 		model.addAttribute("quotes",quotesMap.get("d") );
         model.addAttribute("username", username); 
         return "quotes";
+    }
+	
+	@GetMapping("/{username}/ohlc")
+    public String getOhlcData(@PathVariable String username,@RequestParam(name = "symbol", required = false, defaultValue = "TCS")  String symbol,Model model) {
+        List<OhlcData> ohlcData = fyersService.getStockHistory(username,symbol);
+        model.addAttribute("ohlcList", ohlcData);
+        model.addAttribute("username", username);
+        return "ohlc";
     }
 
 

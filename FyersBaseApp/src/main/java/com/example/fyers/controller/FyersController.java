@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.fyers.dto.FyersTokenDTO;
+import com.example.fyers.dto.OhlcData;
 import com.example.fyers.model.FyersDetails;
 import com.example.fyers.model.FyersToken;
 import com.example.fyers.service.FyersAuthService;
@@ -96,8 +97,11 @@ public class FyersController {
 
 	// ---- Stock History ----
 	@GetMapping("/{username}/stock-history")
-	public ResponseEntity<Map<String, Object>> getStockHistory(@PathVariable String username) {
-		return ResponseEntity.ok(fyersService.getStockHistory(username).toMap());
+	public ResponseEntity<List<OhlcData>> getStockHistory(@PathVariable String username) {
+		
+		List<OhlcData> stockHistory = fyersService.getStockHistory(username);
+		
+		return ResponseEntity.ok(stockHistory);
 	}
 
 	// ---- Holdings ----
@@ -105,5 +109,8 @@ public class FyersController {
 	public ResponseEntity<Map<String, Object>> getHoldings(@PathVariable String username) {
 		return ResponseEntity.ok(fyersService.getHoldings(username).toMap());
 	}
+	
+	
+	
 
 }
