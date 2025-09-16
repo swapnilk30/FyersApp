@@ -72,7 +72,7 @@ public class FyersController {
 	}
 
 	// ---- Authentication ----
-	@PostMapping("/{username}/authenticate")
+	@GetMapping("/{username}/authenticate")
 	public FyersTokenDTO authenticate(@PathVariable String username) {
 		return fyersAuthService.callAuthenticateApi(username);
 	}
